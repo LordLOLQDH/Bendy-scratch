@@ -9,7 +9,7 @@
 :root{color-scheme:dark;--ink:#100e0b;--paper:#e8d7ae;--gold:#c58b42;--muted:#9d8b6c}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080807;color:var(--paper);font-family:Georgia,serif;touch-action:none}
 #game{position:fixed;inset:0;width:100%;height:100%;display:block;background:#17130e}
-#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse,transparent 35%,#0009 100%);z-index:2}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse,transparent 48%,#0005 100%);z-index:2}
 #grain{position:fixed;inset:-50%;z-index:3;pointer-events:none;opacity:.075;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");animation:grain .2s steps(2) infinite}
 @keyframes grain{0%{transform:translate(0,0)}100%{transform:translate(2%,-2%)}}
 .hud{position:fixed;z-index:5;top:env(safe-area-inset-top,12px);left:0;right:0;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
@@ -58,7 +58,7 @@ function wall(x,y){if(x<1||y<1||x>=COLS-1||y>=ROWS-1)return;map[y][x]=1}
 for(let x=3;x<13;x++)wall(x,5);for(let y=5;y<13;y++)wall(12,y);for(let x=12;x<23;x++)wall(x,12);for(let y=3;y<12;y++)wall(22,y);
 for(let x=4;x<10;x++)wall(x,17);for(let y=13;y<18;y++)wall(9,y);for(let x=16;x<27;x++)wall(x,18);for(let y=14;y<19;y++)wall(16,y);
 for(let x=3;x<8;x++)wall(x,9);for(let x=25;x<28;x++)wall(x,7);
-const start={x:2.5*TILE,y:2.5*TILE};
+const start={x:4.5*TILE,y:3.5*TILE};
 const player={x:start.x,y:start.y,r:15,speed:175,stamina:100,face:0,step:0};
 const pages=[{x:7.5,y:3.5},{x:17.5,y:4.5},{x:26.5,y:10.5},{x:5.5,y:14.5},{x:12.5,y:20.5},{x:25.5,y:15.5}].map(p=>({...p,x:p.x*TILE,y:p.y*TILE,got:false}));
 const exit={x:28.5*TILE,y:20.5*TILE};
@@ -94,7 +94,7 @@ if(pages.every(p=>p.got))statusLabel.textContent='EXIT UNLOCKED';
 if(dist(player,exit)<100&&pages.every(p=>p.got))say('Ausgang: AKTION drücken');
 if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)toast.style.opacity=0}if(messageTimer>0){messageTimer-=dt;if(messageTimer<=0)message.style.opacity=0}
 }
-function draw(){ctx.fillStyle='#17130e';ctx.fillRect(0,0,W,H);let camX=clamp(player.x-W/2,TILE,COLS*TILE-W-TILE),camY=clamp(player.y-H/2,TILE,ROWS*TILE-H-TILE);if(COLS*TILE<W)camX=0;if(ROWS*TILE<H)camY=0;
+function draw(){ctx.fillStyle='#17130e';ctx.fillRect(0,0,W,H);let camX=clamp(player.x-W/2,0,Math.max(0,COLS*TILE-W)),camY=clamp(player.y-H/2,0,Math.max(0,ROWS*TILE-H));
 ctx.save();ctx.translate(-camX,-camY);
 for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){let px=x*TILE,py=y*TILE;if(map[y][x]){ctx.fillStyle='#282118';ctx.fillRect(px,py,TILE,TILE);ctx.fillStyle='#3c3021';ctx.fillRect(px+3,py+3,TILE-6,5);ctx.fillStyle='#17130e';ctx.fillRect(px+5,py+13,TILE-10,TILE-18);ctx.strokeStyle='#55432b';ctx.lineWidth=1;ctx.strokeRect(px+4,py+4,TILE-8,TILE-8)}else{ctx.fillStyle=((x+y)%2?'#211b14':'#241d15');ctx.fillRect(px,py,TILE,TILE);ctx.strokeStyle='#34291c';ctx.strokeRect(px,py,TILE,TILE);if((x*13+y*7)%9===0){ctx.fillStyle='#49331e';ctx.fillRect(px+12,py+42,20,2)}}}
 for(const p of pages)if(!p.got){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.sin(elapsed*2+p.x)*.08);ctx.shadowColor='#e6b65d';ctx.shadowBlur=18;ctx.fillStyle='#e5d4aa';ctx.fillRect(-10,-14,20,28);ctx.shadowBlur=0;ctx.fillStyle='#8c6337';ctx.fillRect(-6,-7,12,2);ctx.fillRect(-6,-1,9,2);ctx.fillRect(-6,5,11,2);ctx.restore()}
@@ -104,7 +104,7 @@ drawInk(monster.x,monster.y,monster.r,monster.angle);
 ctx.save();ctx.translate(player.x,player.y);ctx.rotate(player.face);ctx.fillStyle='#c39a61';ctx.beginPath();ctx.ellipse(0,0,13,11,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#24180f';ctx.beginPath();ctx.arc(4,-3,2,0,Math.PI*2);ctx.fill();ctx.restore();
 ctx.restore();
 // torchlight / darkness
-const px=player.x-camX,py=player.y-camY;ctx.save();ctx.fillStyle='rgba(0,0,0,.78)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='destination-out';let g=ctx.createRadialGradient(px,py,25,px,py,Math.max(W,H)*.42);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.55,'rgba(0,0,0,.86)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
+const px=player.x-camX,py=player.y-camY;ctx.save();ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='destination-out';let g=ctx.createRadialGradient(px,py,35,px,py,Math.max(W,H)*.58);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.42,'rgba(0,0,0,.82)');g.addColorStop(.78,'rgba(0,0,0,.42)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
 ctx.fillStyle='rgba(216,165,93,.04)';ctx.fillRect(0,0,W,H);
 }
 function loop(now){let dt=Math.min((now-last)/1000,.04);last=now;if(running&&!paused)update(dt);draw();requestAnimationFrame(loop)}
